@@ -8,6 +8,7 @@ class Task {
   final bool isCompleted;
   final TaskType type;
   final DateTime createdAt;
+  final String? note;
 
   Task({
     required this.id,
@@ -15,6 +16,7 @@ class Task {
     this.isCompleted = false,
     this.type = TaskType.kitchenSink,
     required this.createdAt,
+    this.note,
   });
 
   Task copyWith({
@@ -23,6 +25,8 @@ class Task {
     bool? isCompleted,
     TaskType? type,
     DateTime? createdAt,
+    String? note,
+    bool clearNote = false,
   }) {
     return Task(
       id: id ?? this.id,
@@ -30,6 +34,7 @@ class Task {
       isCompleted: isCompleted ?? this.isCompleted,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
+      note: clearNote ? null : (note ?? this.note),
     );
   }
 
@@ -40,6 +45,7 @@ class Task {
       'isCompleted': isCompleted,
       'type': type.index,
       'createdAt': createdAt.toIso8601String(),
+      'note': note,
     };
   }
 
@@ -50,6 +56,7 @@ class Task {
       isCompleted: map['isCompleted'],
       type: TaskType.values[map['type']],
       createdAt: DateTime.parse(map['createdAt']),
+      note: map['note'] as String?,
     );
   }
 

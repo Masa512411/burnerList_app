@@ -125,6 +125,20 @@ class TaskNotifier extends Notifier<List<Task>> {
     await _saveTasks();
   }
 
+  Future<void> updateTaskNote(String id, String? note) async {
+    state = state.map((t) {
+      if (t.id == id) {
+        final trimmed = note?.trim();
+        return t.copyWith(
+          note: (trimmed != null && trimmed.isNotEmpty) ? trimmed : null,
+          clearNote: trimmed == null || trimmed.isEmpty,
+        );
+      }
+      return t;
+    }).toList();
+    await _saveTasks();
+  }
+
   Future<void> cleanSlate({List<String>? keepTaskIds}) async {
     if (keepTaskIds == null || keepTaskIds.isEmpty) {
       state = [];

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:burner_list/models/task_model.dart';
 import 'package:burner_list/providers/task_provider.dart';
+import 'package:burner_list/widgets/task_note_dialog.dart';
 
 class BurnerSection extends ConsumerWidget {
   final String title;
@@ -84,17 +85,33 @@ class BurnerSection extends ConsumerWidget {
                         ),
                       ),
                       Expanded(
-                        child: Text(
-                          task!.title,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                decoration: task!.isCompleted
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                                color: task!.isCompleted
-                                    ? Colors.grey
-                                    : Colors.black87,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              task!.title,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    decoration: task!.isCompleted
+                                        ? TextDecoration.lineThrough
+                                        : null,
+                                    color: task!.isCompleted
+                                        ? Colors.grey
+                                        : Colors.black87,
+                                  ),
+                            ),
+                            if (task!.note != null && task!.note!.isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  task!.note!,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(color: Colors.grey[600]),
+                                ),
                               ),
+                          ],
                         ),
                       ),
                       IconButton(
@@ -114,7 +131,12 @@ class BurnerSection extends ConsumerWidget {
                       ),
                       PopupMenuButton<String>(
                         onSelected: (value) async {
-                          if (value == 'delete') {
+                          if (value == 'note') {
+                            showDialog(
+                              context: context,
+                              builder: (_) => TaskNoteDialog(task: task!),
+                            );
+                          } else if (value == 'delete') {
                             await ref
                                 .read(taskProvider.notifier)
                                 .deleteTask(task!.id);
@@ -132,6 +154,12 @@ class BurnerSection extends ConsumerWidget {
                         },
                         itemBuilder: (BuildContext context) =>
                             <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                value: 'note',
+                                child: Text(
+                                  task!.note != null ? 'メモを編集' : 'メモを追加',
+                                ),
+                              ),
                               PopupMenuItem<String>(
                                 value: 'demote',
                                 child: Text(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:burner_list/models/task_model.dart';
 import 'package:burner_list/providers/task_provider.dart';
+import 'package:burner_list/widgets/task_note_dialog.dart';
 
 class SinkList extends ConsumerWidget {
   final List<Task> tasks;
@@ -62,9 +63,22 @@ class SinkList extends ConsumerWidget {
                 color: task.isCompleted ? Colors.grey : Colors.black87,
               ),
             ),
+            subtitle: task.note != null && task.note!.isNotEmpty
+                ? Text(
+                    task.note!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                  )
+                : null,
             trailing: PopupMenuButton<String>(
               onSelected: (value) async {
-                if (value == 'delete') {
+                if (value == 'note') {
+                  showDialog(
+                    context: context,
+                    builder: (_) => TaskNoteDialog(task: task),
+                  );
+                } else if (value == 'delete') {
                   await ref.read(taskProvider.notifier).deleteTask(task.id);
                 } else if (value == 'promote_front') {
                   await ref
@@ -85,7 +99,15 @@ class SinkList extends ConsumerWidget {
                 }
               },
               itemBuilder: (BuildContext context) {
-                final List<PopupMenuEntry<String>> items = [];
+                final List<PopupMenuEntry<String>> items = [
+                  PopupMenuItem<String>(
+                    value: 'note',
+                    child: Text(
+                      task.note != null ? 'メモを編集' : 'メモを追加',
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                ];
 
                 if (task.type != TaskType.frontBurner) {
                   items.add(
