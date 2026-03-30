@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:burner_list/models/task_model.dart';
 import 'package:burner_list/providers/task_provider.dart';
+import 'package:burner_list/screens/settings_screen.dart';
 import 'package:burner_list/widgets/burner_section.dart';
 import 'package:burner_list/widgets/sink_list.dart';
 import 'package:burner_list/widgets/fresh_start_dialog.dart';
@@ -119,19 +120,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline),
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: '設定',
             onPressed: () {
-              showDialog(
-                context: context,
-                builder: (c) => const AlertDialog(
-                  title: Text('About Burner List'),
-                  content: Text(
-                    'Focus on one thing at a time.\n\n'
-                    'Front Burner: Your most important task.\n'
-                    'Back Burner: What you will do next.\n'
-                    'Kitchen Sink: Everything else.',
-                  ),
-                ),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
               );
             },
           ),
