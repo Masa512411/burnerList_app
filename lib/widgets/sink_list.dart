@@ -6,11 +6,13 @@ import 'package:burner_list/widgets/task_note_dialog.dart';
 
 class SinkList extends ConsumerWidget {
   final List<Task> tasks;
+  final TaskType taskType;
   final String emptyMessage;
 
   const SinkList({
     super.key,
     required this.tasks,
+    required this.taskType,
     this.emptyMessage = 'The sink is empty!',
   });
 
@@ -30,13 +32,19 @@ class SinkList extends ConsumerWidget {
       );
     }
 
-    return ListView.builder(
+    return ReorderableListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
+      onReorder: (oldIndex, newIndex) {
+        ref
+            .read(taskProvider.notifier)
+            .reorderTasks(taskType, oldIndex, newIndex);
+      },
       itemCount: tasks.length,
       itemBuilder: (context, index) {
         final task = tasks[index];
         return Card(
+          key: ValueKey(task.id),
           margin: const EdgeInsets.symmetric(vertical: 4),
           elevation: 0,
           color: Colors.white,

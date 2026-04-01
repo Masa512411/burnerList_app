@@ -89,15 +89,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sinkTasks = tasks
         .where((t) => t.type == TaskType.kitchenSink)
         .toList();
-    // Sort sink tasks by creation date (newest first? or oldest first? usually lists are append at bottom)
-    // Let's do newest first for now.
-    sinkTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     // Counter Space tasks
     final counterTasks = tasks
         .where((t) => t.type == TaskType.counterSpace)
         .toList();
-    counterTasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     return Scaffold(
       appBar: AppBar(
@@ -169,6 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             SinkList(
               tasks: counterTasks,
+              taskType: TaskType.counterSpace,
               emptyMessage: 'No ideas in the counter space.',
             ),
             const SizedBox(height: 24),
@@ -203,7 +200,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const Divider(height: 1),
             const SizedBox(height: 8),
-            SinkList(tasks: sinkTasks),
+            SinkList(tasks: sinkTasks, taskType: TaskType.kitchenSink),
           ],
         ),
       ),

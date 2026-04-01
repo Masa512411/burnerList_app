@@ -139,6 +139,25 @@ class TaskNotifier extends Notifier<List<Task>> {
     await _saveTasks();
   }
 
+  Future<void> reorderTasks(
+    TaskType type,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    final typedTasks = state.where((t) => t.type == type).toList();
+    if (oldIndex < newIndex) newIndex -= 1;
+    final task = typedTasks.removeAt(oldIndex);
+    typedTasks.insert(newIndex, task);
+
+    int typedIndex = 0;
+    final List<Task> newState = state.map((t) {
+      if (t.type == type) return typedTasks[typedIndex++];
+      return t;
+    }).toList();
+    state = newState;
+    await _saveTasks();
+  }
+
   Future<void> cleanSlate({List<String>? keepTaskIds}) async {
     if (keepTaskIds == null || keepTaskIds.isEmpty) {
       state = [];
