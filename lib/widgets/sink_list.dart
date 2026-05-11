@@ -86,6 +86,8 @@ class SinkList extends ConsumerWidget {
                     context: context,
                     builder: (_) => TaskNoteDialog(task: task),
                   );
+                } else if (value == 'archive') {
+                  await ref.read(taskProvider.notifier).archiveTask(task.id);
                 } else if (value == 'delete') {
                   await ref.read(taskProvider.notifier).deleteTask(task.id);
                 } else if (value == 'promote_front') {
@@ -156,8 +158,14 @@ class SinkList extends ConsumerWidget {
                 items.add(const PopupMenuDivider());
                 items.add(
                   const PopupMenuItem<String>(
+                    value: 'archive',
+                    child: Text('アーカイブ'),
+                  ),
+                );
+                items.add(
+                  const PopupMenuItem<String>(
                     value: 'delete',
-                    child: Text('Delete', style: TextStyle(color: Colors.red)),
+                    child: Text('削除', style: TextStyle(color: Colors.red)),
                   ),
                 );
 

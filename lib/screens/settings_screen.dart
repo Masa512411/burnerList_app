@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:burner_list/providers/settings_provider.dart';
 import 'package:burner_list/providers/task_provider.dart';
+import 'package:burner_list/screens/archived_tasks_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -68,6 +69,16 @@ class SettingsScreen extends ConsumerWidget {
 
           // ----- データ管理 -----
           _SectionHeader(label: 'データ管理'),
+          ListTile(
+            leading: const Icon(Icons.archive_outlined),
+            title: const Text('アーカイブ'),
+            subtitle: const Text('アーカイブされたタスクを確認・復元します'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ArchivedTasksScreen()),
+            ),
+          ),
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: const Text('全データを削除'),
