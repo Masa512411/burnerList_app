@@ -15,6 +15,28 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      final newPage = _pageController.page?.round() ?? 0;
+      if (newPage != _currentPage) {
+        setState(() {
+          _currentPage = newPage;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   void _showAddTaskDialog(
     BuildContext context, {
     TaskType initialType = TaskType.kitchenSink,
@@ -131,82 +153,109 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            BurnerSection(
-              title: 'Front Burner',
-              type: TaskType.frontBurner,
-              task: frontBurnerTask,
-              onAddPressed: () => _showAddTaskDialog(
-                context,
-                initialType: TaskType.frontBurner,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'COUNTER SPACE',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.grey[600],
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.bold,
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              children: <Widget>[
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      BurnerSection(
+                        title: 'Front Burner',
+                        type: TaskType.frontBurner,
+                        task: frontBurnerTask,
+                        onAddPressed: () => _showAddTaskDialog(
+                          context,
+                          initialType: TaskType.frontBurner,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'COUNTER SPACE',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: Colors.grey[600],
+                                  letterSpacing: 1.2,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.add_circle,
+                              color: Colors.deepPurple,
+                            ),
+                            onPressed: () => _showAddTaskDialog(
+                              context,
+                              initialType: TaskType.counterSpace,
+                            ),
+                            tooltip: 'Add to Counter Space',
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.deepPurple),
-                  onPressed: () => _showAddTaskDialog(
-                    context,
-                    initialType: TaskType.counterSpace,
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      BurnerSection(
+                        title: 'Back Burner',
+                        type: TaskType.backBurner,
+                        task: backBurnerTask,
+                        onAddPressed: () => _showAddTaskDialog(
+                          context,
+                          initialType: TaskType.backBurner,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      SinkList(
+                        tasks: counterTasks,
+                        taskType: TaskType.counterSpace,
+                        emptyMessage: 'No ideas in the counter space.',
+                      ),
+                      const SizedBox(height: 24),
+                      const Divider(height: 1),
+                      const SizedBox(height: 8),
+                      SinkList(
+                        tasks: sinkTasks,
+                        taskType: TaskType.kitchenSink,
+                      ),
+                    ],
                   ),
-                  tooltip: 'Add to Counter Space',
                 ),
               ],
             ),
-            SinkList(
-              tasks: counterTasks,
-              taskType: TaskType.counterSpace,
-              emptyMessage: 'No ideas in the counter space.',
-            ),
-            const SizedBox(height: 24),
-            BurnerSection(
-              title: 'Back Burner',
-              type: TaskType.backBurner,
-              task: backBurnerTask,
-              onAddPressed: () =>
-                  _showAddTaskDialog(context, initialType: TaskType.backBurner),
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'KITCHEN SINK',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.grey[600],
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.bold,
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 8, bottom: 80),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(2, (index) {
+                final isActive = _currentPage == index;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  width: isActive ? 24 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: isActive ? Colors.deepPurple : Colors.grey[400],
+                    borderRadius: BorderRadius.circular(4),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.orange),
-                  onPressed: () => _showAddTaskDialog(
-                    context,
-                    initialType: TaskType.kitchenSink,
-                  ),
-                  tooltip: 'Add to Sink',
-                ),
-              ],
+                );
+              }),
             ),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-            SinkList(tasks: sinkTasks, taskType: TaskType.kitchenSink),
-          ],
-        ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTaskDialog(context),
