@@ -74,24 +74,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // but the list might contain multiple if we forced it.
     // We'll take the first one found or null.
 
+    final activeTasks = tasks.where((t) => !t.isArchived).toList();
+
     Task? frontBurnerTask;
     Task? backBurnerTask;
 
     try {
-      frontBurnerTask = tasks.firstWhere((t) => t.type == TaskType.frontBurner);
+      frontBurnerTask = activeTasks.firstWhere(
+        (t) => t.type == TaskType.frontBurner,
+      );
     } catch (_) {}
 
     try {
-      backBurnerTask = tasks.firstWhere((t) => t.type == TaskType.backBurner);
+      backBurnerTask = activeTasks.firstWhere(
+        (t) => t.type == TaskType.backBurner,
+      );
     } catch (_) {}
 
-    // Kitchen sink tasks
-    final sinkTasks = tasks
+    final sinkTasks = activeTasks
         .where((t) => t.type == TaskType.kitchenSink)
         .toList();
 
-    // Counter Space tasks
-    final counterTasks = tasks
+    final counterTasks = activeTasks
         .where((t) => t.type == TaskType.counterSpace)
         .toList();
 

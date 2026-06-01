@@ -61,7 +61,7 @@ class BurnerSection extends ConsumerWidget {
               boxShadow: task != null
                   ? [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -136,6 +136,10 @@ class BurnerSection extends ConsumerWidget {
                               context: context,
                               builder: (_) => TaskNoteDialog(task: task!),
                             );
+                          } else if (value == 'archive') {
+                            await ref
+                                .read(taskProvider.notifier)
+                                .archiveTask(task!.id);
                           } else if (value == 'delete') {
                             await ref
                                 .read(taskProvider.notifier)
@@ -168,10 +172,15 @@ class BurnerSection extends ConsumerWidget {
                                       : 'Move to Sink',
                                 ),
                               ),
+                              const PopupMenuDivider(),
+                              const PopupMenuItem<String>(
+                                value: 'archive',
+                                child: Text('アーカイブ'),
+                              ),
                               const PopupMenuItem<String>(
                                 value: 'delete',
                                 child: Text(
-                                  'Delete',
+                                  '削除',
                                   style: TextStyle(color: Colors.red),
                                 ),
                               ),

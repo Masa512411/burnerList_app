@@ -9,6 +9,7 @@ class Task {
   final TaskType type;
   final DateTime createdAt;
   final String? note;
+  final bool isArchived;
 
   Task({
     required this.id,
@@ -17,6 +18,7 @@ class Task {
     this.type = TaskType.kitchenSink,
     required this.createdAt,
     this.note,
+    this.isArchived = false,
   });
 
   Task copyWith({
@@ -27,6 +29,7 @@ class Task {
     DateTime? createdAt,
     String? note,
     bool clearNote = false,
+    bool? isArchived,
   }) {
     return Task(
       id: id ?? this.id,
@@ -35,6 +38,7 @@ class Task {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       note: clearNote ? null : (note ?? this.note),
+      isArchived: isArchived ?? this.isArchived,
     );
   }
 
@@ -46,6 +50,7 @@ class Task {
       'type': type.index,
       'createdAt': createdAt.toIso8601String(),
       'note': note,
+      'isArchived': isArchived,
     };
   }
 
@@ -57,6 +62,7 @@ class Task {
       type: TaskType.values[map['type']],
       createdAt: DateTime.parse(map['createdAt']),
       note: map['note'] as String?,
+      isArchived: map['isArchived'] as bool? ?? false,
     );
   }
 
