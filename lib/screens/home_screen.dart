@@ -199,14 +199,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-                SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                      SinkList(
+                        tasks: counterTasks,
+                        taskType: TaskType.counterSpace,
+                        emptyMessage: 'No ideas in the counter space.',
+                      ),
+                      const SizedBox(height: 24),
                       BurnerSection(
                         title: 'Back Burner',
                         type: TaskType.backBurner,
@@ -216,16 +214,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           initialType: TaskType.backBurner,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'KITCHEN SINK',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: Colors.grey[600],
+                                  letterSpacing: 1.2,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
 
-                      SinkList(
-                        tasks: counterTasks,
-                        taskType: TaskType.counterSpace,
-                        emptyMessage: 'No ideas in the counter space.',
+                          IconButton(
+                            icon: const Icon(
+                              Icons.add_circle,
+                              color: Colors.orange,
+                            ),
+                            onPressed: () => _showAddTaskDialog(
+                              context,
+                              initialType: TaskType.kitchenSink,
+                            ),
+                            tooltip: 'Add to Sink',
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                      const Divider(height: 1),
-                      const SizedBox(height: 8),
                       SinkList(
                         tasks: sinkTasks,
                         taskType: TaskType.kitchenSink,
