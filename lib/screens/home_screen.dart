@@ -4,6 +4,7 @@ import 'package:burner_list/models/task_model.dart';
 import 'package:burner_list/providers/task_provider.dart';
 import 'package:burner_list/screens/settings_screen.dart';
 import 'package:burner_list/widgets/burner_section.dart';
+import 'package:burner_list/widgets/completed_task_list.dart';
 import 'package:burner_list/widgets/sink_list.dart';
 import 'package:burner_list/widgets/fresh_start_dialog.dart';
 
@@ -14,7 +15,22 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
   void _showAddTaskDialog(
     BuildContext context, {
     TaskType initialType = TaskType.kitchenSink,
@@ -75,27 +91,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // We'll take the first one found or null.
 
     final activeTasks = tasks.where((t) => !t.isArchived).toList();
+    final pendingTasks = activeTasks.where((t) => !t.isCompleted).toList();
+    final completedTasks = activeTasks.where((t) => t.isCompleted).toList();
 
     Task? frontBurnerTask;
     Task? backBurnerTask;
 
     try {
-      frontBurnerTask = activeTasks.firstWhere(
+      frontBurnerTask = pendingTasks.firstWhere(
         (t) => t.type == TaskType.frontBurner,
       );
     } catch (_) {}
 
     try {
-      backBurnerTask = activeTasks.firstWhere(
+      backBurnerTask = pendingTasks.firstWhere(
         (t) => t.type == TaskType.backBurner,
       );
     } catch (_) {}
 
-    final sinkTasks = activeTasks
+    final sinkTasks = pendingTasks
         .where((t) => t.type == TaskType.kitchenSink)
         .toList();
 
-    final counterTasks = activeTasks
+    final counterTasks = pendingTasks
         .where((t) => t.type == TaskType.counterSpace)
         .toList();
 
@@ -130,83 +148,108 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             },
           ),
         ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            BurnerSection(
-              title: 'Front Burner',
-              type: TaskType.frontBurner,
-              task: frontBurnerTask,
-              onAddPressed: () => _showAddTaskDialog(
-                context,
-                initialType: TaskType.frontBurner,
-              ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'COUNTER SPACE',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.grey[600],
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.deepPurple),
-                  onPressed: () => _showAddTaskDialog(
-                    context,
-                    initialType: TaskType.counterSpace,
-                  ),
-                  tooltip: 'Add to Counter Space',
-                ),
-              ],
-            ),
-            SinkList(
-              tasks: counterTasks,
-              taskType: TaskType.counterSpace,
-              emptyMessage: 'No ideas in the counter space.',
-            ),
-            const SizedBox(height: 24),
-            BurnerSection(
-              title: 'Back Burner',
-              type: TaskType.backBurner,
-              task: backBurnerTask,
-              onAddPressed: () =>
-                  _showAddTaskDialog(context, initialType: TaskType.backBurner),
-            ),
-            const SizedBox(height: 32),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'KITCHEN SINK',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.grey[600],
-                    letterSpacing: 1.2,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle, color: Colors.orange),
-                  onPressed: () => _showAddTaskDialog(
-                    context,
-                    initialType: TaskType.kitchenSink,
-                  ),
-                  tooltip: 'Add to Sink',
-                ),
-              ],
-            ),
-            const Divider(height: 1),
-            const SizedBox(height: 8),
-            SinkList(tasks: sinkTasks, taskType: TaskType.kitchenSink),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'バーナー'),
+            Tab(text: 'シンク'),
+            Tab(text: '完了'),
           ],
         ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: <Widget>[
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                BurnerSection(
+                  title: 'Front Burner',
+                  type: TaskType.frontBurner,
+                  task: frontBurnerTask,
+                  onAddPressed: () => _showAddTaskDialog(
+                    context,
+                    initialType: TaskType.frontBurner,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'COUNTER SPACE',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey[600],
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.add_circle,
+                        color: Colors.deepPurple,
+                      ),
+                      onPressed: () => _showAddTaskDialog(
+                        context,
+                        initialType: TaskType.counterSpace,
+                      ),
+                      tooltip: 'Add to Counter Space',
+                    ),
+                  ],
+                ),
+                SinkList(
+                  tasks: counterTasks,
+                  taskType: TaskType.counterSpace,
+                  emptyMessage: 'No ideas in the counter space.',
+                ),
+                const SizedBox(height: 24),
+                BurnerSection(
+                  title: 'Back Burner',
+                  type: TaskType.backBurner,
+                  task: backBurnerTask,
+                  onAddPressed: () => _showAddTaskDialog(
+                    context,
+                    initialType: TaskType.backBurner,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'KITCHEN SINK',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey[600],
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    IconButton(
+                      icon: const Icon(Icons.add_circle, color: Colors.orange),
+                      onPressed: () => _showAddTaskDialog(
+                        context,
+                        initialType: TaskType.kitchenSink,
+                      ),
+                      tooltip: 'Add to Sink',
+                    ),
+                  ],
+                ),
+                SinkList(tasks: sinkTasks, taskType: TaskType.kitchenSink),
+              ],
+            ),
+          ),
+          CompletedTaskList(tasks: completedTasks),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTaskDialog(context),
