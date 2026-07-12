@@ -36,21 +36,19 @@ class TaskNotifier extends Notifier<List<Task>> {
     final newTask = Task(
       id: _uuid.v4(),
       title: title,
-      type: type,
+      type: TaskType.kitchenSink,
       createdAt: DateTime.now(),
     );
-    // If adding to front/back, we might need to displace others.
-    // For now, let's just add it. The move logic handles displacement.
-    // Actually, if we add directly to front, we should ensure uniqueness.
-
-    if (type == TaskType.frontBurner || type == TaskType.backBurner) {
-      // We can just add it, and if there's already one, we might have 2.
-      // Let's use the displacement logic if strictly adding to burner.
-      // But usually new tasks go to sink or we select empty slot.
-    }
 
     state = [...state, newTask];
-    await _saveTasks();
+
+    if (type == TaskType.kitchenSink) {
+      await _saveTasks();
+    } else {
+      // Route through moveTask so front/back burner displacement runs
+      // even when adding directly into an occupied slot.
+      await moveTask(newTask.id, type);
+    }
   }
 
   Future<void> deleteTask(String id) async {
@@ -139,19 +137,19 @@ class TaskNotifier extends Notifier<List<Task>> {
     await _saveTasks();
   }
 
-  Future<void> reorderTasks(
-    TaskType type,
-    int oldIndex,
-    int newIndex,
-  ) async {
-    final typedTasks = state.where((t) => t.type == type).toList();
+  Future<void> reorderTasks(TaskType type, int oldIndex, int newIndex) async {
+    // Must match the filtering the UI applies (pending, non-completed tasks)
+    // so the indices passed in correspond to the same list being reordered.
+    final typedTasks = state
+        .where((t) => t.type == type && !t.isCompleted)
+        .toList();
     if (oldIndex < newIndex) newIndex -= 1;
     final task = typedTasks.removeAt(oldIndex);
     typedTasks.insert(newIndex, task);
 
     int typedIndex = 0;
     final List<Task> newState = state.map((t) {
-      if (t.type == type) return typedTasks[typedIndex++];
+      if (t.type == type && !t.isCompleted) return typedTasks[typedIndex++];
       return t;
     }).toList();
     state = newState;
@@ -169,7 +167,11 @@ class TaskNotifier extends Notifier<List<Task>> {
   Future<void> restoreTask(String id) async {
     state = state.map((t) {
       if (t.id == id) {
-        return t.copyWith(isArchived: false, type: TaskType.kitchenSink);
+        return t.copyWith(
+          isArchived: false,
+          type: TaskType.kitchenSink,
+          isCompleted: false,
+        );
       }
       return t;
     }).toList();
