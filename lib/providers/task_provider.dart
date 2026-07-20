@@ -57,9 +57,26 @@ class TaskNotifier extends Notifier<List<Task>> {
   }
 
   Future<void> toggleTaskCompletion(String id) async {
+    final task = state.firstWhere((t) => t.id == id);
+    final willComplete = !task.isCompleted;
+
+    // 未完了に戻すとき、フロント/バーナーのスロットが既に別の未完了タスクで
+    // 埋まっている場合はシンクへ移動する（同じスロットに複数入るのを防ぐ）。
+    TaskType targetType = task.type;
+    if (!willComplete &&
+        (task.type == TaskType.frontBurner ||
+            task.type == TaskType.backBurner)) {
+      final slotOccupied = state.any(
+        (t) => t.id != id && t.type == task.type && !t.isCompleted,
+      );
+      if (slotOccupied) {
+        targetType = TaskType.kitchenSink;
+      }
+    }
+
     state = state.map((t) {
       if (t.id == id) {
-        return t.copyWith(isCompleted: !t.isCompleted);
+        return t.copyWith(isCompleted: willComplete, type: targetType);
       }
       return t;
     }).toList();
@@ -76,9 +93,13 @@ class TaskNotifier extends Notifier<List<Task>> {
     // Displacement Logic
     if (newType == TaskType.frontBurner) {
       // Check for existing front burner
+      // Completed tasks are treated as empty slots by the UI, so ignore them
+      // here as well to avoid demoting an active back burner unexpectedly.
       int? oldFrontIndex;
       for (var i = 0; i < newState.length; i++) {
-        if (newState[i].type == TaskType.frontBurner && newState[i].id != id) {
+        if (newState[i].type == TaskType.frontBurner &&
+            newState[i].id != id &&
+            !newState[i].isCompleted) {
           oldFrontIndex = i;
           break;
         }
@@ -99,15 +120,19 @@ class TaskNotifier extends Notifier<List<Task>> {
           // If it's back burner, and it is NOT the one we just demoted, and NOT the one we are moving in
           if (newState[i].type == TaskType.backBurner &&
               i != oldFrontIndex &&
-              newState[i].id != id) {
+              newState[i].id != id &&
+              !newState[i].isCompleted) {
             newState[i] = newState[i].copyWith(type: TaskType.kitchenSink);
           }
         }
       }
     } else if (newType == TaskType.backBurner) {
-      // Demote existing Back Burner to Sink
+      // Demote existing Back Burner to Sink (completed tasks are treated as
+      // empty slots by the UI, so they should not be displaced).
       for (int i = 0; i < newState.length; i++) {
-        if (newState[i].type == TaskType.backBurner && newState[i].id != id) {
+        if (newState[i].type == TaskType.backBurner &&
+            newState[i].id != id &&
+            !newState[i].isCompleted) {
           newState[i] = newState[i].copyWith(type: TaskType.kitchenSink);
         }
       }
