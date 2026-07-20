@@ -10,6 +10,8 @@ class CompletedTaskList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (tasks.isEmpty) {
       return Center(
         child: Padding(
@@ -33,10 +35,10 @@ class CompletedTaskList extends ConsumerWidget {
           key: ValueKey(task.id),
           margin: const EdgeInsets.symmetric(vertical: 4),
           elevation: 0,
-          color: Colors.white,
+          color: colorScheme.surfaceContainerLowest,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: Colors.grey.shade200),
+            side: BorderSide(color: colorScheme.outlineVariant),
           ),
           child: ListTile(
             leading: IconButton(

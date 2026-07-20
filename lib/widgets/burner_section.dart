@@ -20,14 +20,18 @@ class BurnerSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     // Define colors based on type
     final Color borderColor = type == TaskType.frontBurner
         ? const Color(0xFFFF5722)
         : const Color(0xFF2196F3);
 
+    // Icon背景はダークモードでは暗めのトーンにする
     final Color bgColor = type == TaskType.frontBurner
-        ? const Color(0xFFFFF3E0)
-        : const Color(0xFFE3F2FD);
+        ? (isDark ? const Color(0xFF4A2A1A) : const Color(0xFFFFF3E0))
+        : (isDark ? const Color(0xFF1A3040) : const Color(0xFFE3F2FD));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -48,10 +52,12 @@ class BurnerSection extends ConsumerWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: task != null ? Colors.white : Colors.transparent,
+              color: task != null
+                  ? colorScheme.surfaceContainerLowest
+                  : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: task != null ? Colors.transparent : Colors.grey[300]!,
+                color: colorScheme.outlineVariant,
                 width: 2,
                 style: task != null
                     ? BorderStyle.solid
@@ -96,8 +102,8 @@ class BurnerSection extends ConsumerWidget {
                                         ? TextDecoration.lineThrough
                                         : null,
                                     color: task!.isCompleted
-                                        ? Colors.grey
-                                        : Colors.black87,
+                                        ? colorScheme.onSurfaceVariant
+                                        : colorScheme.onSurface,
                                   ),
                             ),
                             if (task!.note != null && task!.note!.isNotEmpty)
@@ -108,7 +114,9 @@ class BurnerSection extends ConsumerWidget {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(color: Colors.grey[600]),
+                                      ?.copyWith(
+                                        color: colorScheme.onSurfaceVariant,
+                                      ),
                                 ),
                               ),
                           ],
@@ -121,7 +129,7 @@ class BurnerSection extends ConsumerWidget {
                               : Icons.circle_outlined,
                           color: task!.isCompleted
                               ? Colors.green
-                              : Colors.grey[400],
+                              : colorScheme.onSurfaceVariant,
                         ),
                         onPressed: () {
                           ref

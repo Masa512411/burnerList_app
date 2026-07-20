@@ -18,15 +18,22 @@ class SinkList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (tasks.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
-          child: Text(
-            emptyMessage,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
+          child: Column(
+            children: [
+              Icon(Icons.inbox_outlined, color: Colors.grey, size: 36),
+              Text(
+                emptyMessage,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[400]),
+              ),
+            ],
           ),
         ),
       );
@@ -35,7 +42,7 @@ class SinkList extends ConsumerWidget {
     return ReorderableListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      onReorder: (oldIndex, newIndex) {
+      onReorderItem: (oldIndex, newIndex) {
         ref
             .read(taskProvider.notifier)
             .reorderTasks(taskType, oldIndex, newIndex);
@@ -47,16 +54,18 @@ class SinkList extends ConsumerWidget {
           key: ValueKey(task.id),
           margin: const EdgeInsets.symmetric(vertical: 4),
           elevation: 0,
-          color: Colors.white,
+          color: colorScheme.surfaceContainerLowest,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
-            side: BorderSide(color: Colors.grey.shade200),
+            side: BorderSide(color: colorScheme.outlineVariant),
           ),
           child: ListTile(
             leading: IconButton(
               icon: Icon(
                 task.isCompleted ? Icons.check_circle : Icons.circle_outlined,
-                color: task.isCompleted ? Colors.green : Colors.grey[400],
+                color: task.isCompleted
+                    ? Colors.green
+                    : colorScheme.onSurfaceVariant,
               ),
               onPressed: () {
                 ref.read(taskProvider.notifier).toggleTaskCompletion(task.id);
@@ -68,7 +77,9 @@ class SinkList extends ConsumerWidget {
                 decoration: task.isCompleted
                     ? TextDecoration.lineThrough
                     : null,
-                color: task.isCompleted ? Colors.grey : Colors.black87,
+                color: task.isCompleted
+                    ? colorScheme.onSurfaceVariant
+                    : colorScheme.onSurface,
               ),
             ),
             subtitle: task.note != null && task.note!.isNotEmpty
@@ -76,7 +87,10 @@ class SinkList extends ConsumerWidget {
                     task.note!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
                   )
                 : null,
             trailing: PopupMenuButton<String>(
@@ -112,9 +126,7 @@ class SinkList extends ConsumerWidget {
                 final List<PopupMenuEntry<String>> items = [
                   PopupMenuItem<String>(
                     value: 'note',
-                    child: Text(
-                      task.note != null ? 'メモを編集' : 'メモを追加',
-                    ),
+                    child: Text(task.note != null ? 'メモを編集' : 'メモを追加'),
                   ),
                   const PopupMenuDivider(),
                 ];
